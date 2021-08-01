@@ -14,6 +14,7 @@ var scrollReserve = 15;
 
 // This will fire scrolls no matter what, if we hit this limit... (so we can pick up new scrolls).
 var scrollUpperBound = 29;
+// char names shown on the menu tab
 const CHAR_CLASS_LIST = [
   "Fighter",
   "Priest",
@@ -28,6 +29,7 @@ const CHAR_CLASS_LIST = [
   "Chicken King",
   "Spider Lord"
 ];
+// skill points upgrade strategy
 const skillStrategy = {
   "Fighter" : [0, 1, 2, 3],
   "Priest" : [2, 1, 4, 0],
@@ -42,13 +44,16 @@ const skillStrategy = {
   "Chicken King" : [0, 1, 2, 3],
   "Spider Lord" : [0, 3, 1, 2],
 };
+// interval time
+const INTERVAL = 1000;
+
 $(document).ready(function () {
 
 	console.log('Starting Clickpocalypse2Clicker: ' + GM_info.script.version);
   
-  let charClasses = [];
 	setInterval(function () {
-  	if (charClasses.length <= 0) findClasses(charClasses);
+  	let charClasses = findClasses();
+    if (!charClasses || !charClasses.length) return; // this means the game is not started
 		// Determines our encounter states
 		var isBossEncounter = ($('.bossEncounterNotificationDiv').length != 0);
 		var isEncounter = ($('#encounterNotificationPanel').css('display') !== 'none');
@@ -268,42 +273,41 @@ $(document).ready(function () {
 
 		}
 
-	}, 1000);
+	}, INTERVAL);
   
-  // use a seperate interval to upgrade skills
-  let clicked = [];
+  // skill points interval
+  let clicked = null;
   setInterval(function() {
     if (!hasSkillPoint()) {
-    	clicked = [];
+      // nothing to be upgraded
+      clicked = null;
       return;
     }
+    let charClasses = findClasses();
+    if (!charClasses || !charClasses.length) return; // this means the game is not started
+    
+    if (!clicked) clicked = new Array(charClasses.length).fill([]);
   	// Level up character skills.
     // Note: the strategy will NOT work properly while you have >1 skill points, becuase a "clickable" skill will be refreshed
     // after a certion time while you just upgrade one. At the same time, the other "clickable" skills will be clicked during
-    // that certian time. a solution would be up grade only 1 skill at one interval.
-    let upgraded = false;
-		for (var charPos = 0; charPos < charClasses.length; charPos++) {
-      if (upgraded) break;
+    // that certian time. a solution would be up grade only 1 skill for each class at one interval.
+		loopChar: for (var charPos = 0; charPos < charClasses.length; charPos++) {
       let strategy = skillStrategy[charClasses[charPos]];
       if (!strategy) strategy = [0, 1, 2, 3];
       // try through the columns following the strategy
-			strategy.forEach( function (s){
-        if (upgraded) return;
-				for (var row = 0; row < 9; row++) {
+      loopStrategy: for (var s of strategy) {
+				loopRow: for (var row = 0; row < 9; row++) {
           // There is an ending col on all, not sure why yet
           let id = charPos + '_' + row + '_' + s + '_' + row;
-          if (clicked.indexOf(id) < 0) {
+          if (clicked[charPos].indexOf(id) < 0) {
             clickIt('#characterSkillsContainer' + id);
-            clicked.push(id);
-            upgraded = true;
-          	return;
+            clicked[charPos].push(id);
+          	break loopStrategy; // done for this char
           }
 				}
-			});
+      }
 		}
-    if (!upgraded) clicked = []; // means I didn't click anything
-    else upgraded = false; // reset it
-  }, 500);
+  }, INTERVAL);
 });
 /*** Click by div id **/
 function clickIt(divName) {
@@ -319,7 +323,8 @@ function clickSelector($selector) {
 	$selector.mouseup();
 }
 // find char classes
-function findClasses(charClasses) {
+function findClasses() {
+  let charClasses = [];
   let elements = document.querySelectorAll("#gameTabMenu li a");
   if (elements && elements.length)
     elements.forEach(function(e){
@@ -327,6 +332,7 @@ function findClasses(charClasses) {
       if (CHAR_CLASS_LIST.indexOf(name) <= 0) return;
       charClasses.push(name);
     });
+  return charClasses;
 }
 // check if have available skill points
 function hasSkillPoint(charClasses) {

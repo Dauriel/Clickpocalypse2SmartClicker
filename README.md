@@ -1,4 +1,7 @@
-# Clickpocalypse2Clicker
+# Updates after forking
+Added skill upgrade strategy
+
+# Clickpocalypse2Clicker [Forked]
 Greasemonkey clickbot for Clickpocalypse II
 
 This is a greasemonkey script for automating clicks in [Clickpocalypse II](http://minmaxia.com/c2/).  It simulates "legitimate" clicks and doesn't modify any internal game data or use "cheat" codes.

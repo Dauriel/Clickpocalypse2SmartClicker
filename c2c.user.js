@@ -14,13 +14,41 @@ var scrollReserve = 15;
 
 // This will fire scrolls no matter what, if we hit this limit... (so we can pick up new scrolls).
 var scrollUpperBound = 29;
-
+const CHAR_CLASS_LIST = [
+  "Fighter",
+  "Priest",
+  "Ranger",
+  "Pyro",
+  "Rogue",
+  "Druid",
+  "Barbarian",
+  "Electro",
+  "Ninja",
+  "Necro",
+  "Chicken King",
+  "Spider Lord"
+];
+const skillStrategy = {
+  "Fighter" : [0, 1, 2, 3],
+  "Priest" : [2, 1, 4, 0],
+  "Ranger" : [0, 1, 2, 3],
+  "Pyro" : [3, 2, 1, 0],
+  "Rogue" : [3, 2, 1, 0],
+  "Druid" : [0, 3, 1, 2],
+  "Barbarian" : [0, 1, 3, 2],
+  "Electro" : [3, 2, 1, 0],
+  "Ninja" : [0, 3, 1, 2],
+  "Necro" : [1, 2, 0, 3],
+  "Chicken King" : [0, 1, 2, 3],
+  "Spider Lord" : [0, 3, 1, 2],
+};
 $(document).ready(function () {
 
 	console.log('Starting Clickpocalypse2Clicker: ' + GM_info.script.version);
-
+  
+  let charClasses = [];
 	setInterval(function () {
-
+  	if (charClasses.length <= 0) findClasses(charClasses);
 		// Determines our encounter states
 		var isBossEncounter = ($('.bossEncounterNotificationDiv').length != 0);
 		var isEncounter = ($('#encounterNotificationPanel').css('display') !== 'none');
@@ -70,17 +98,6 @@ $(document).ready(function () {
 		// Cycle though all quick bar upgrades in reverse order.
 		for (var i = 43; i >= 0; i--) {
 			clickIt('#upgradeButtonContainer_' + i);
-		}
-
-		// Level up character skills.
-		// No strategy yet, just click whatever is clickable
-		for (var charPos = 0; charPos < 5; charPos++) {
-			for (var col = 0; col < 9; col++) {
-				for (var row = 0; row < 4; row++) {
-					// There is an ending col on all, not sure why yet
-					clickIt('#characterSkillsContainer' + charPos + '_' + col + '_' + row + '_' + col);
-				}
-			}
 		}
 
 		// Get information about potions are active before taking any actions
@@ -252,6 +269,41 @@ $(document).ready(function () {
 		}
 
 	}, 1000);
+  
+  // use a seperate interval to upgrade skills
+  let clicked = [];
+  setInterval(function() {
+    if (!hasSkillPoint()) {
+    	clicked = [];
+      return;
+    }
+  	// Level up character skills.
+    // Note: the strategy will NOT work properly while you have >1 skill points, becuase a "clickable" skill will be refreshed
+    // after a certion time while you just upgrade one. At the same time, the other "clickable" skills will be clicked during
+    // that certian time. a solution would be up grade only 1 skill at one interval.
+    let upgraded = false;
+		for (var charPos = 0; charPos < charClasses.length; charPos++) {
+      if (upgraded) break;
+      let strategy = skillStrategy[charClasses[charPos]];
+      if (!strategy) strategy = [0, 1, 2, 3];
+      // try through the columns following the strategy
+			strategy.forEach( function (s){
+        if (upgraded) return;
+				for (var row = 0; row < 9; row++) {
+          // There is an ending col on all, not sure why yet
+          let id = charPos + '_' + row + '_' + s + '_' + row;
+          if (clicked.indexOf(id) < 0) {
+            clickIt('#characterSkillsContainer' + id);
+            clicked.push(id);
+            upgraded = true;
+          	return;
+          }
+				}
+			});
+		}
+    if (!upgraded) clicked = []; // means I didn't click anything
+    else upgraded = false; // reset it
+  }, 500);
 });
 /*** Click by div id **/
 function clickIt(divName) {
@@ -265,4 +317,26 @@ function clickIt(divName) {
 /*** Click by Selector **/
 function clickSelector($selector) {
 	$selector.mouseup();
+}
+// find char classes
+function findClasses(charClasses) {
+  let elements = document.querySelectorAll("#gameTabMenu li a");
+  if (elements && elements.length)
+    elements.forEach(function(e){
+      let name = e.text.split(" ")[0];
+      if (CHAR_CLASS_LIST.indexOf(name) <= 0) return;
+      charClasses.push(name);
+    });
+}
+// check if have available skill points
+function hasSkillPoint(charClasses) {
+  let elements = document.querySelectorAll("#gameTabMenu li a");
+  let hasPoint = false;
+  if (elements && elements.length)
+    elements.forEach(function(e){
+      let name = e.text.split(" ")[0];
+      if (CHAR_CLASS_LIST.indexOf(name) <= 0) return;
+      if (e.text.split(" ").length > 1) hasPoint = true;
+    });
+  return hasPoint;
 }

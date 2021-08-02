@@ -346,3 +346,17 @@ function hasSkillPoint(charClasses) {
     });
   return hasPoint;
 }
+
+
+/* savefile related */
+function readSave() {
+  return JSON.parse(fa.eD(localStorage.getItem(w.pg.Zp)), true);
+}
+function writeSave(obj) {
+  localStorage.setItem(w.pg.Zp, fa.cD(JSON.stringify(obj)));
+}
+
+window.readSave = readSave;
+window.writeSave = writeSave;
+	
+	

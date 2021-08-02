@@ -88,7 +88,7 @@ function rendMenu() {
   let container = $("#script-ui");
   container.empty();
 	let markup = `
-		 <table style="background: #000;position: fixed;bottom: 15px;right: 15px; padding: 10px">
+		 <table>
         <tr>
           <td align=right>Auto AP Point:</td>
           <td style="padding-left: 10px"><button id="config-auto-point">${configs.autoPoint ? "ON" : "OFF"}</button></td>
@@ -127,7 +127,7 @@ function rendMenu() {
 $(document).ready(function () {
 
   console.log("Add script manager UI");
-  $("body").append($("<div id='script-ui'></div>"));
+  $("body").append($(`<div id='script-ui' style="background: #000;position: fixed;bottom: 15px;right: 15px; padding: 10px; border: 1px solid #1e1b1b;"></div>`));
   rendMenu();
   
 	console.log('Starting Clickpocalypse2Clicker: ' + GM_info.script.version);

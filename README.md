@@ -2,7 +2,8 @@
 
 1. Added skill upgrade strategy
 2. Add GUI for enabling/disabling those automation funcntions
-3. Add a savefile editing functions. NOTE: the functions won't work in greasemonkey, you can peak the code and edit your savefile in console.
+3. add option for player to adjust game window scales to fit moden large monitor.
+4. Add a savefile editing functions. NOTE: the functions won't work in greasemonkey, you can peak the code and edit your savefile in console.
 
 # Clickpocalypse2Clicker [Forked]
 Greasemonkey clickbot for Clickpocalypse II

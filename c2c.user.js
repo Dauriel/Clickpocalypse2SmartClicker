@@ -26,7 +26,7 @@ const CHAR_CLASS_LIST = [
   "Electro",
   "Ninja",
   "Necro",
-  "Chicken King",
+  "King",
   "Spider Lord"
 ];
 // skill points upgrade strategy
@@ -41,19 +41,102 @@ const skillStrategy = {
   "Electro" : [3, 2, 1, 0],
   "Ninja" : [0, 3, 1, 2],
   "Necro" : [1, 2, 0, 3],
-  "Chicken King" : [0, 1, 2, 3],
-  "Spider Lord" : [0, 3, 1, 2],
+  "King" : [0, 1, 2, 3],
+  "Lord" : [0, 3, 1, 2],
 };
 // interval time
 const INTERVAL = 1000;
 
+let configs = {
+	autoPoint: false,
+  autoSkill: true,
+  autoScroll: true,
+  autoPotion: true,
+  autoLoot: true,
+  windowScale: 1
+};
+
+function updateConfig(name) {
+	return function() {
+  	if ([
+      "autoPoint",
+      "autoSkill",
+      "autoScroll",
+      "autoPotion",
+      "autoLoot",
+    ].includes(name)) {
+      configs[name] = !configs[name];
+      rendMenu();
+    } else if ([
+      "windowScale",
+    ].includes(name)) {
+      // validate scale value
+      if (isNaN(this.value)) {
+      	alert("Window transform scale must be a valid number");
+        return;
+      }
+      configs.windowScale = parseFloat(this.value);
+      $("#gameContainer").css("transform-origin", "top");
+      $("#gameContainer").css("transform", `scale(${configs.windowScale})`);
+    } else {
+      throw new error("invalid config object");
+    }
+  }
+}
+
+function rendMenu() {
+  let container = $("#script-ui");
+  container.empty();
+	let markup = `
+		 <table style="background: #000;position: fixed;bottom: 15px;right: 15px; padding: 10px">
+        <tr>
+          <td align=right>Auto AP Point:</td>
+          <td style="padding-left: 10px"><button id="config-auto-point">${configs.autoPoint ? "ON" : "OFF"}</button></td>
+        </tr>
+        <tr>
+          <td align=right>Auto Skill:</td>
+          <td style="padding-left: 10px"><button id="config-auto-skill">${configs.autoSkill ? "ON" : "OFF"}</button></td>
+        </tr>
+        <tr>
+          <td align=right>Auto Potion:</td>
+          <td style="padding-left: 10px"><button id="config-auto-potion">${configs.autoPotion ? "ON" : "OFF"}</button></td>
+        </tr>
+        <tr>
+          <td align=right>Auto Scroll:</td>
+          <td style="padding-left: 10px"><button id="config-auto-scroll">${configs.autoScroll ? "ON" : "OFF"}</button></td>
+        </tr>
+        <tr>
+          <td align=right>Auto Loot:</td>
+          <td style="padding-left: 10px"><button id="config-auto-loot">${configs.autoLoot ? "ON" : "OFF"}</button></td>
+        </tr>
+        <tr>
+          <td align=right>Window Scale:</td>
+          <td style="padding-left: 10px"><input id="config-window-scale" style="width: 30px" type="text" value="${configs.windowScale}"></input></td>
+        </tr>
+      </table> 
+	`;
+  container.append($(markup));
+  $("#config-auto-point").click(updateConfig("autoPoint"));
+  $("#config-auto-skill").click(updateConfig("autoSkill"));
+  $("#config-auto-scroll").click(updateConfig("autoScroll"));
+  $("#config-auto-potion").click(updateConfig("autoPotion"));
+  $("#config-auto-loot").click(updateConfig("autoLoot"));
+  $("#config-window-scale").change(updateConfig("windowScale"));
+}
+
 $(document).ready(function () {
 
+  console.log("Add script manager UI");
+  $("body").append($("<div id='script-ui'></div>"));
+  rendMenu();
+  
 	console.log('Starting Clickpocalypse2Clicker: ' + GM_info.script.version);
   
 	setInterval(function () {
   	let charClasses = findClasses();
     if (!charClasses || !charClasses.length) return; // this means the game is not started
+    
+    // ------------------------------------ BOSS strategy ------------------------------------
 		// Determines our encounter states
 		var isBossEncounter = ($('.bossEncounterNotificationDiv').length != 0);
 		var isEncounter = ($('#encounterNotificationPanel').css('display') !== 'none');
@@ -82,200 +165,206 @@ $(document).ready(function () {
 
 		//console.log("isDifficultEncounter: " + isDifficultEncounter);
 
+    // --------------------------------------- Loot ---------------------------------------
 		// loot them chests... not sure which one of these is working.
-		clickSelector($('#treasureChestLootButtonPanel').find('.gameTabLootButtonPanel'));
-		clickSelector($('#treasureChestLootButtonPanel').find('.lootButton'));
+		if (configs.autoLoot) {
+    	clickSelector($('#treasureChestLootButtonPanel').find('.gameTabLootButtonPanel'));
+			clickSelector($('#treasureChestLootButtonPanel').find('.lootButton'));
 
+      // Cycle though all quick bar upgrades in reverse order.
+      for (var i = 43; i >= 0; i--) {
+        clickIt('#upgradeButtonContainer_' + i);
+      }
+    }
+		// --------------------------------------- AP points -----------------------------------
 		// Update AP Upgrades
-		for (var row = 0; row < 12; row++) {
-			// skip 'Offline Time Bonus' upgrade.
-			if (row == 3) {
-				continue;
-			}
-			for (var col = 0; col < 2; col++) {
+		if (configs.autoPoint) {
+      for (var row = 0; row < 12; row++) {
+        // skip 'Offline Time Bonus' upgrade.
+        if (row == 3) {
+          continue;
+        }
+        for (var col = 0; col < 2; col++) {
 
-				var name = "#pointUpgradesContainer_" + row + "_" + col + "_" + row;
+          var name = "#pointUpgradesContainer_" + row + "_" + col + "_" + row;
 
-				clickIt(name);
-			}
-		}
+          clickIt(name);
+        }
+      }
+    }
+		// ----------------------------------------- potions ----------------------------------------
+		if (configs.autoPotion) {
+      // Get information about potions are active before taking any actions
+      var isPotionActive_ScrollsAutoFire = false;
+      var isPotionActive_InfinteScrolls = false;
+      var potionCount = 0;
 
-		// Cycle though all quick bar upgrades in reverse order.
-		for (var i = 43; i >= 0; i--) {
-			clickIt('#upgradeButtonContainer_' + i);
-		}
+      for (var row = 0; row < 4; row++) {
+        for (var col = 0; col < 2; col++) {
 
-		// Get information about potions are active before taking any actions
+          var potionSelector = $('#potionButton_Row' + row + '_Col' + col).find('.potionContentContainer');
+          var potionName = potionSelector.find('td').eq(1).text();
+          var potionActive = (potionSelector.find('.potionButtonActive').length != 0);
 
-		var isPotionActive_ScrollsAutoFire = false;
-		var isPotionActive_InfinteScrolls = false;
-		var potionCount = 0;
+          if (potionName.length == 0) {
+            continue;
+          }
 
-		for (var row = 0; row < 4; row++) {
-			for (var col = 0; col < 2; col++) {
+          potionCount++;
 
-				var potionSelector = $('#potionButton_Row' + row + '_Col' + col).find('.potionContentContainer');
-				var potionName = potionSelector.find('td').eq(1).text();
-				var potionActive = (potionSelector.find('.potionButtonActive').length != 0);
+          if (potionName === 'Scrolls Auto Fire') {
+            isPotionActive_ScrollsAutoFire = potionActive;
+          }
+          if (potionName === 'Infinite Scrolls') {
+            isPotionActive_InfinteScrolls = potionActive;
+          }
 
-				if (potionName.length == 0) {
-					continue;
-				}
+        }
+      }
 
-				potionCount++;
+      //console.log ("AF: " +isPotionActive_ScrollsAutoFire +" IS: " +isPotionActive_InfinteScrolls +" Potion Count: " +potionCount );
 
-				if (potionName === 'Scrolls Auto Fire') {
-					isPotionActive_ScrollsAutoFire = potionActive;
-				}
-				if (potionName === 'Infinite Scrolls') {
-					isPotionActive_InfinteScrolls = potionActive;
-				}
+      // Click them potions
+      for (var row = 0; row < 4; row++) {
+        for (var col = 0; col < 2; col++) {
 
-			}
-		}
+          var potionSelector = $('#potionButton_Row' + row + '_Col' + col).find('.potionContentContainer');
+          var potionName = potionSelector.find('td').eq(1).text();
+          var potionActive = (potionSelector.find('.potionButtonActive').length != 0);
 
-		//console.log ("AF: " +isPotionActive_ScrollsAutoFire +" IS: " +isPotionActive_InfinteScrolls +" Potion Count: " +potionCount );
+          if (potionName.length == 0) {
+            continue;
+          }
+          if (potionActive) {
+            continue;
+          }
 
-		// Click them potions
-		for (var row = 0; row < 4; row++) {
-			for (var col = 0; col < 2; col++) {
+          // We don't want to use AutoFire and InfinteScrolls together, since they have similar functions.
+          if (potionName === 'Infinite Scrolls' && isPotionActive_ScrollsAutoFire) {
+            continue;
+          }
+          if (potionName === 'Scrolls Auto Fire' && isPotionActive_InfinteScrolls) {
+            continue;
+          }
 
-				var potionSelector = $('#potionButton_Row' + row + '_Col' + col).find('.potionContentContainer');
-				var potionName = potionSelector.find('td').eq(1).text();
-				var potionActive = (potionSelector.find('.potionButtonActive').length != 0);
-
-				if (potionName.length == 0) {
-					continue;
-				}
-				if (potionActive) {
-					continue;
-				}
-
-				// We don't want to use AutoFire and InfinteScrolls together, since they have similar functions.
-				if (potionName === 'Infinite Scrolls' && isPotionActive_ScrollsAutoFire) {
-					continue;
-				}
-				if (potionName === 'Scrolls Auto Fire' && isPotionActive_InfinteScrolls) {
-					continue;
-				}
-
-				// Always click farm bonus or fast walking potions as soon as we get them, since they are useful anywhere.
-				if (potionName === 'Faster Infestation' || potionName === 'More Kills Per Farm' || potionName === 'Faster Farming' || potionName === 'Fast Walking') {
-					clickSelector(potionSelector);
-					continue;
-				}
+          // Always click farm bonus or fast walking potions as soon as we get them, since they are useful anywhere.
+          if (potionName === 'Faster Infestation' || potionName === 'More Kills Per Farm' || potionName === 'Faster Farming' || potionName === 'Fast Walking') {
+            clickSelector(potionSelector);
+            continue;
+          }
 
 
-				// Only click these if we are in battle, no need to chug potions if we are walking around peaceful overworld.
-				if (isBossEncounter || isEncounter) {
+          // Only click these if we are in battle, no need to chug potions if we are walking around peaceful overworld.
+          if (isBossEncounter || isEncounter) {
 
-					if (potionName === 'Infinite Scrolls') {
-						isPotionActive_InfinteScrolls = true;
-					}
-					if (potionName === 'Scrolls Auto Fire') {
-						isPotionActive_ScrollsAutoFire = true;
-					}
+            if (potionName === 'Infinite Scrolls') {
+              isPotionActive_InfinteScrolls = true;
+            }
+            if (potionName === 'Scrolls Auto Fire') {
+              isPotionActive_ScrollsAutoFire = true;
+            }
 
-					if (potionName === 'Potions Last Longer') {
-						if (potionCount < 6 && !(isPotionActive_InfinteScrolls || isPotionActive_ScrollsAutoFire)) {
-							continue;
-						}
-					}
+            if (potionName === 'Potions Last Longer') {
+              if (potionCount < 6 && !(isPotionActive_InfinteScrolls || isPotionActive_ScrollsAutoFire)) {
+                continue;
+              }
+            }
 
-					if ( (potionName === 'Random Treasure Room' || potionName === 'Double Item Drops' || potionName === 'Double Gold Drops')  
-						&& (isPotionActive_InfinteScrolls || isPotionActive_ScrollsAutoFire) ) {
-						continue;
-					}
+            if ( (potionName === 'Random Treasure Room' || potionName === 'Double Item Drops' || potionName === 'Double Gold Drops')  
+              && (isPotionActive_InfinteScrolls || isPotionActive_ScrollsAutoFire) ) {
+              continue;
+            }
 
-					clickSelector(potionSelector);
-				}
+            clickSelector(potionSelector);
+          }
 
-			}
-		}
+        }
+      }
+    }
+		// ------------------------------------ scrolls ------------------------------------------
+		if (configs.autoScroll) {
+    	// Get info about scrolls before taking any action.
+      var totalScrolls = 0;
+      for (var i = 0; i < 6; i++) {
 
-		// Get info about scrolls before taking any action.
-		var totalScrolls = 0;
-		for (var i = 0; i < 6; i++) {
+        var scrollCell = $('#scrollButtonCell' + i);
+        var scrollButton = scrollCell.find('.scrollButton');
+        var scrollAmount = scrollCell.find('tr').eq(1).text().replace('x', ''); ;
 
-			var scrollCell = $('#scrollButtonCell' + i);
-			var scrollButton = scrollCell.find('.scrollButton');
-			var scrollAmount = scrollCell.find('tr').eq(1).text().replace('x', ''); ;
+        if (!scrollAmount.length) {
+          continue;
+        }
 
-			if (!scrollAmount.length) {
-				continue;
-			}
+        if (scrollAmount === 'Infinite' || isPotionActive_InfinteScrolls) {
+          break;
+        }
 
-			if (scrollAmount === 'Infinite' || isPotionActive_InfinteScrolls) {
-				break;
-			}
+        // Don't count spider webs
+        if (i != 1) {
+          totalScrolls += parseInt(scrollAmount);
+        }
 
-			// Don't count spider webs
-			if (i != 1) {
-				totalScrolls += parseInt(scrollAmount);
-			}
+      }
 
-		}
-
-		//console.log("Total Scrolls:" +totalScrolls);
-
-
-		// click them scrolls
-		for (var i = 0; i < 6; i++) {
-
-			var scrollCell = $('#scrollButtonCell' + i);
-			var scrollButton = scrollCell.find('.scrollButton');
-			var scrollAmount = scrollCell.find('tr').eq(1).text().replace('x', ''); ;
-
-			if (!scrollAmount.length) {
-				continue;
-			}
-
-			// Hitting limit, fire scrolls so we can pick up new ones.
-			if (scrollAmount > scrollUpperBound) {
-				clickSelector(scrollButton);
-				continue;
-			}
+      //console.log("Total Scrolls:" +totalScrolls);
 
 
-			// Spam spells if Infinite Scrolls potion is active.
-			if (scrollAmount === 'Infinite' || isPotionActive_InfinteScrolls) {
+      // click them scrolls
+      for (var i = 0; i < 6; i++) {
 
-				// 4 times per second
-				clickSelector(scrollButton);
-				setTimeout(clickSelector, 250, scrollButton);
-				setTimeout(clickSelector, 500, scrollButton);
-				setTimeout(clickSelector, 750, scrollButton);
-				continue;
-			}
+        var scrollCell = $('#scrollButtonCell' + i);
+        var scrollButton = scrollCell.find('.scrollButton');
+        var scrollAmount = scrollCell.find('tr').eq(1).text().replace('x', ''); ;
 
-			// Fire 0 scrolls if Autofire is active... it fires them for free, so let's not waste ours.
-			// unless boss encounter, we still want to double up on the big guys...
-			if (isPotionActive_ScrollsAutoFire && !isBossEncounter && !isDifficultEncounter) {
-				continue;
-			}
+        if (!scrollAmount.length) {
+          continue;
+        }
 
-			// 1 === spider web scroll.  Always fire at normal encounters.
-			// Boss are immune to spider web, so won't fire them.
-			if (i == 1 && !isBossEncounter) {
-				clickSelector(scrollButton);
-			}
+        // Hitting limit, fire scrolls so we can pick up new ones.
+        if (scrollAmount > scrollUpperBound) {
+          clickSelector(scrollButton);
+          continue;
+        }
 
 
-			if (i != 1) {
+        // Spam spells if Infinite Scrolls potion is active.
+        if (scrollAmount === 'Infinite' || isPotionActive_InfinteScrolls) {
 
-				// keep scrolls in reserve if generic encounter so we have them for boss.
-				// No limit if this is a boss encounter
-				if (scrollAmount > scrollReserve || isBossEncounter || isDifficultEncounter) {
-					clickSelector(scrollButton);
-				}
+          // 4 times per second
+          clickSelector(scrollButton);
+          setTimeout(clickSelector, 250, scrollButton);
+          setTimeout(clickSelector, 500, scrollButton);
+          setTimeout(clickSelector, 750, scrollButton);
+          continue;
+        }
 
-			}
+        // Fire 0 scrolls if Autofire is active... it fires them for free, so let's not waste ours.
+        // unless boss encounter, we still want to double up on the big guys...
+        if (isPotionActive_ScrollsAutoFire && !isBossEncounter && !isDifficultEncounter) {
+          continue;
+        }
 
-		}
+        // 1 === spider web scroll.  Always fire at normal encounters.
+        // Boss are immune to spider web, so won't fire them.
+        if (i == 1 && !isBossEncounter) {
+          clickSelector(scrollButton);
+        }
+
+
+        if (i != 1) {
+
+          // keep scrolls in reserve if generic encounter so we have them for boss.
+          // No limit if this is a boss encounter
+          if (scrollAmount > scrollReserve || isBossEncounter || isDifficultEncounter) {
+            clickSelector(scrollButton);
+          }
+        }
+      }
+    }
 
 	}, INTERVAL);
   
-  // skill points interval
+  // ---------------------------- skill points interval -------------------------------
   let clicked = null;
   setInterval(function() {
     if (!hasSkillPoint()) {
@@ -283,32 +372,35 @@ $(document).ready(function () {
       clicked = null;
       return;
     }
-    let charClasses = findClasses();
-    if (!charClasses || !charClasses.length) return; // this means the game is not started
-    
-    if (!clicked) clicked = new Array(charClasses.length).fill([]);
-  	// Level up character skills.
-    // Note: the strategy will NOT work properly while you have >1 skill points, becuase a "clickable" skill will be refreshed
-    // after a certion time while you just upgrade one. At the same time, the other "clickable" skills will be clicked during
-    // that certian time. a solution would be up grade only 1 skill for each class at one interval.
-		loopChar: for (var charPos = 0; charPos < charClasses.length; charPos++) {
-      let strategy = skillStrategy[charClasses[charPos]];
-      if (!strategy) strategy = [0, 1, 2, 3];
-      // try through the columns following the strategy
-      loopStrategy: for (var s of strategy) {
-				loopRow: for (var row = 0; row < 9; row++) {
-          // There is an ending col on all, not sure why yet
-          let id = charPos + '_' + row + '_' + s + '_' + row;
-          if (clicked[charPos].indexOf(id) < 0) {
-            clickIt('#characterSkillsContainer' + id);
-            clicked[charPos].push(id);
-          	break loopStrategy; // done for this char
+    if (configs.autoSkill) {
+      let charClasses = findClasses();
+      if (!charClasses || !charClasses.length) return; // this means the game is not started
+
+      if (!clicked) clicked = new Array(charClasses.length).fill([]);
+      // Level up character skills.
+      // Note: the strategy will NOT work properly while you have >1 skill points, becuase a "clickable" skill will be refreshed
+      // after a certion time while you just upgrade one. At the same time, the other "clickable" skills will be clicked during
+      // that certian time. a solution would be up grade only 1 skill for each class at one interval.
+      loopChar: for (var charPos = 0; charPos < charClasses.length; charPos++) {
+        let strategy = skillStrategy[charClasses[charPos]];
+        if (!strategy) strategy = [0, 1, 2, 3];
+        // try through the columns following the strategy
+        loopStrategy: for (var s of strategy) {
+          loopRow: for (var row = 0; row < 9; row++) {
+            // There is an ending col on all, not sure why yet
+            let id = charPos + '_' + row + '_' + s + '_' + row;
+            if (clicked[charPos].indexOf(id) < 0) {
+              clickIt('#characterSkillsContainer' + id);
+              clicked[charPos].push(id);
+              break loopStrategy; // done for this char
+            }
           }
-				}
+        }
       }
-		}
+    }
   }, INTERVAL);
 });
+// -------------------------------- helpers -----------------------------------
 /*** Click by div id **/
 function clickIt(divName) {
 	var div = $(divName);
@@ -347,8 +439,10 @@ function hasSkillPoint(charClasses) {
   return hasPoint;
 }
 
-
+// --------------------------------- hack ----------------------------------
 /* savefile related */
+// NOTE: this won't work in GreaseMonkey, since @grant: none
+// you can use this code in your console menually to edit your savefile.
 function readSave() {
   return JSON.parse(fa.eD(localStorage.getItem(w.pg.Zp)), true);
 }
@@ -356,7 +450,3 @@ function writeSave(obj) {
   localStorage.setItem(w.pg.Zp, fa.cD(JSON.stringify(obj)));
 }
 
-window.readSave = readSave;
-window.writeSave = writeSave;
-	
-	

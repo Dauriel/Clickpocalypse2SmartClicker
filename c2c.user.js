@@ -53,7 +53,7 @@ const skillStrategy = {
   "Priest": [2, 1, 4, 0],
   "Ranger": [0, 1, 2, 3],
   "Pyro": [3, 2, 1, 0],
-  "Rogue": [3, 2, 1, 0],
+  "Rogue": [2, 1, 0, 3], // prioritize 3 if auto loot is off
   "Druid": [0, 3, 1, 2],
   "Barbarian": [0, 1, 3, 2],
   "Electro": [3, 2, 1, 0],

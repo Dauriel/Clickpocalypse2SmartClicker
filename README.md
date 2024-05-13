@@ -4,7 +4,7 @@ Version 1.0.9
 1. Added rudimentary skill tree strategy option for summoning parties. Prioritizes on skills that increase number of summons
 2. Added custom summoning strategy for druid
    
-# Clickpocalypse2Clicker [Forked]
+# Clickpocalypse2Clicker [Forked x2]
 Greasemonkey clickbot for Clickpocalypse II
 
 This is a greasemonkey script for automating clicks in [Clickpocalypse II](http://minmaxia.com/c2/).  It simulates "legitimate" clicks and doesn't modify any internal game data or use "cheat" codes.
@@ -54,4 +54,5 @@ Download c2c.user.js and install as a user script.
 # todos
 
 * Add summoning strategies for other characters
+* Add automatic prestige option
 

@@ -65,7 +65,7 @@ const skillStrategy = {
 
 // rudimentary summoning strategy. [col, row]
 const summonStrategy = {
-  "Druid": [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [2, 8], [1, 7], [1, 8], [3, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8]],
+  "Druid": [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [1, 1], [1, 2], [2, 8], [0, 7], [0, 8], [3, 0], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8]],
 }
 
 // interval time
@@ -409,7 +409,7 @@ $(document).ready(function () {
       loopChar: for (var charPos = 0; charPos < charClasses.length; charPos++) {
 
         if (strategytype[charClasses[charPos]]) {
-          console.log("Upgrading skills for " + charClasses[charPos] + " using default strategy");
+          //console.log("Upgrading skills for " + charClasses[charPos] + " using default strategy");
           let strategy = skillStrategy[charClasses[charPos]];
           loopStrategy: for (var s of strategy) {
             loopRow: for (var row = 0; row < 9; row++) {
@@ -418,13 +418,13 @@ $(document).ready(function () {
               if (clicked[charPos].indexOf(id) < 0) {
                 clickIt('#characterSkillsContainer' + id);
                 clicked[charPos].push(id);
-                console.log("Upgraded skill for " + charClasses[charPos] + " using default strategy at column" + s + "row" + row)
+                //console.log("Upgraded skill for " + charClasses[charPos] + " using default strategy at column" + s + "row" + row)
                 break loopStrategy; // done for this char
               }
             }
           }
         } else {
-          console.log("Upgrading skills for " + charClasses[charPos] + " using custom summoning strategy");
+          //console.log("Upgrading skills for " + charClasses[charPos] + " using custom summoning strategy");
           let strategy = summonStrategy[charClasses[charPos]];
 
           // let's find the current index of the summon strategy
@@ -434,7 +434,7 @@ $(document).ready(function () {
             if (clicked[charPos].indexOf(id) < 0) {
               clickIt('#characterSkillsContainer' + id);
               clicked[charPos].push(id);
-              console.log("Upgraded skill for " + charClasses[charPos] + " using custom summoning strategy at column" + s[0] + "row" + s[1])
+              //console.log("Upgraded skill for " + charClasses[charPos] + " using custom summoning strategy at column" + s[0] + "row" + s[1])
               break loopStrategy; // done for this char
             }
           }

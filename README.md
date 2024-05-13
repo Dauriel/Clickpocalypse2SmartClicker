@@ -1,7 +1,7 @@
 # Updates after forking
 Version 1.0.9
 
-1. Added custom skill tree strategy option summoning parties, focuses on skills that increase number of summons
+1. Added rudimentary skill tree strategy option for summoning parties. Prioritizes on skills that increase number of summons
 2. Added custom summoning strategy for druid
    
 # Clickpocalypse2Clicker [Forked]

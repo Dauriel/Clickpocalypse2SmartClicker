@@ -1,10 +1,9 @@
 # Updates after forking
+Version 1.0.9
 
-1. Added skill upgrade strategy
-2. Add GUI for enabling/disabling those automation funcntions
-3. Add option for player to adjust game window scales to fit moden large monitor.
-4. Add a savefile editing functions. NOTE: the functions won't work in greasemonkey, you can peak the code and edit your savefile in console.
-
+1. Added custom skill tree strategy option summoning parties, focuses on skills that increase number of summons
+2. Added custom summoning strategy for druid
+   
 # Clickpocalypse2Clicker [Forked]
 Greasemonkey clickbot for Clickpocalypse II
 
@@ -28,7 +27,8 @@ Download c2c.user.js and install as a user script.
 
 ### Character Levels/Skills
 
-* No strategy yet, but will automatically level up characters and select first available skill upgrade in order.
+* Default strategy: Upgrades skills in column order specified
+* Summoning strategy: Upgrades skills maximizing those that increase number of summons. Order is set to minimize levels.
 
 ### Potions
 * Farm potions ('Faster Infestation', 'Faster Farming' and 'More Kills Per Farm') and 'Fast Walking' will be used as soon as they are obtained since they are beneficial outside of combat.
@@ -53,7 +53,6 @@ Download c2c.user.js and install as a user script.
 
 # todos
 
-* Character skill upgrade logic could be tweaked to maximize certain skills first.
 * Smarter use of Spider Web scroll (don't spam if all enemies are already stuck).
 * Reserve qty of scrolls could be done total, instead or per scroll type.
 * Potion 'Spells Cost Nothing' should be sold if no mage is in party?  Not sure if useful for fighters.

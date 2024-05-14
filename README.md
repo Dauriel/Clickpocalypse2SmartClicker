@@ -4,6 +4,7 @@ Version 1.0.9
 1. Added rudimentary skill tree custom strategy option
 2. Added custom summoning strategy for druid
 3. Added custom summoning strategy for necromancer
+4. Added custom buffing strategy for priest
    
 # Clickpocalypse2Clicker [Forked x2]
 Greasemonkey clickbot for Clickpocalypse II

@@ -42,7 +42,7 @@ const strategytype = {
   "Barbarian": 1,
   "Electro": 1,
   "Ninja": 1,
-  "Necro": 1,
+  "Necro": 0,
   "King": 1,
   "Lord": 1,
 }
@@ -53,7 +53,7 @@ const skillStrategy = {
   "Priest": [2, 1, 4, 0],
   "Ranger": [0, 1, 2, 3],
   "Pyro": [3, 2, 1, 0],
-  "Rogue": [2, 1, 0, 3], // prioritize 3 if auto loot is off
+  "Rogue": [3, 2, 1, 0],
   "Druid": [0, 3, 1, 2],
   "Barbarian": [0, 1, 3, 2],
   "Electro": [3, 2, 1, 0],
@@ -63,9 +63,10 @@ const skillStrategy = {
   "Lord": [0, 3, 1, 2],
 };
 
-// rudimentary custom strategy. [col, row]
+// rudimentary summoning strategy. [col, row]
 const customStrategy = {
   "Druid": [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [1, 1], [1, 2], [2, 8], [0, 7], [0, 8], [3, 0], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8]],
+  "Necro": [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [1, 5], [1, 6], [1, 7], [1, 8], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8]],
 }
 
 // interval time
@@ -388,7 +389,7 @@ $(document).ready(function () {
 
   }, INTERVAL);
 
-  // ---------------------------- summon interval -------------------------------
+  // ---------------------------- skill interval -------------------------------
 
   let clicked = null;
   setInterval(function () {
@@ -424,7 +425,7 @@ $(document).ready(function () {
             }
           }
         } else {
-          //console.log("Upgrading skills for " + charClasses[charPos] + " using custom summoning strategy");
+          //console.log("Upgrading skills for " + charClasses[charPos] + " using custom strategy");
           let strategy = customStrategy[charClasses[charPos]];
 
           // let's find the current index of the summon strategy
@@ -434,7 +435,7 @@ $(document).ready(function () {
             if (clicked[charPos].indexOf(id) < 0) {
               clickIt('#characterSkillsContainer' + id);
               clicked[charPos].push(id);
-              //console.log("Upgraded skill for " + charClasses[charPos] + " using custom summoning strategy at column" + s[0] + "row" + s[1])
+              //console.log("Upgraded skill for " + charClasses[charPos] + " using custom strategy at column" + s[0] + "row" + s[1])
               break loopStrategy; // done for this char
             }
           }

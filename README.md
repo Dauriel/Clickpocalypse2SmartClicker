@@ -1,8 +1,9 @@
 # Updates after forking
 Version 1.0.9
 
-1. Added rudimentary skill tree strategy option for summoning parties. Prioritizes on skills that increase number of summons
+1. Added rudimentary skill tree custom strategy option
 2. Added custom summoning strategy for druid
+3. Added custom summoning strategy for necromancer
    
 # Clickpocalypse2Clicker [Forked x2]
 Greasemonkey clickbot for Clickpocalypse II
@@ -28,7 +29,7 @@ Download c2c.user.js and install as a user script.
 ### Character Levels/Skills
 
 * Default strategy: Upgrades skills in column order specified
-* Summoning strategy: Upgrades skills maximizing those that increase number of summons. Order is set to minimize levels.
+* Custom strategy: Upgrades skills in a predefined order
 
 ### Potions
 * Farm potions ('Faster Infestation', 'Faster Farming' and 'More Kills Per Farm') and 'Fast Walking' will be used as soon as they are obtained since they are beneficial outside of combat.
